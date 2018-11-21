@@ -22,6 +22,19 @@ function parseHardwareId() {
 class Device {
     constructor() {
         this.hardwareId = parseHardwareId();
+        
+        // Default actions:
+        // TODO: implement actions
+        this.actions = [
+            new Action("custom.reboot", "Reboot", {}),
+            new Action("custom.shutdown", "Shutdown", {})
+        ]
+
+        // Sensors:
+        // TODO: scan RPi to get a real list of sensors 
+        this.sensors = [
+            new Sensor("humidity", "sensor.humidity")
+        ]
     }
 
     getHardwareId() {
@@ -29,15 +42,23 @@ class Device {
     }
 
     getActions() {
-        return []
+        return this.actions
     }
 
     getSensors() {
-        return []
+        return this.sensors
     }
 
     getName() {
         return "group1"
+    }
+
+    runAction(actionId) {
+        if (actionId >= this.actions.length)
+            return
+        
+        var action = this.actions[actionId]
+        action.run()
     }
 }
 
