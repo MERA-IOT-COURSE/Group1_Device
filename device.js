@@ -1,29 +1,64 @@
 const fs = require('fs')
+const Sensor = require('./sensor')
+const Action = require('./action')
+
+function parseHardwareId() {
+    const cpuinfoPath = "/proc/cpuinfo"
+
+    var cpuinfo = fs.readFileSync(cpuinfoPath, 'utf-8')
+    var hardwareId = null
+
+    // Serial       : 0000000043da31c3
+    var hardwareIdRegexp = /Serial\s*:\s*(\w+)/g;
+    
+    var match = hardwareIdRegexp.exec(cpuinfo)
+    if (match) {
+        hardwareId = match[1]
+    }
+
+    return hardwareId
+}
 
 class Device {
+    constructor() {
+        this.hardwareId = parseHardwareId();
+        
+        // Default actions:
+        // TODO: implement actions
+        this.actions = [
+            new Action("custom.reboot", "Reboot", {}),
+            new Action("custom.shutdown", "Shutdown", {})
+        ]
+
+        // Sensors:
+        // TODO: scan RPi to get a real list of sensors 
+        this.sensors = [
+            new Sensor("humidity", "sensor.humidity")
+        ]
+    }
+
     getHardwareId() {
-        const cpuinfoPath = "/proc/cpuinfo"
-        
-        var cpuinfo = fs.readFileSync(cpuinfoPath, 'utf-8')
-        var hardwareId = null
-
-        // Serial       : 0000000043da31c3
-        var hardwareIdRegexp = /Serial\s*:\s*(\w+)/g;
-        
-        var match = hardwareIdRegexp.exec(cpuinfo)
-        if (match) {
-            hardwareId = match[1]
-        }
-
-        return hardwareId
+        return this.hardwareId
     }
 
     getActions() {
-        return []
+        return this.actions
+    }
+
+    getSensors() {
+        return this.sensors
     }
 
     getName() {
         return "group1"
+    }
+
+    runAction(actionId) {
+        if (actionId >= this.actions.length)
+            return
+        
+        var action = this.actions[actionId]
+        action.run()
     }
 }
 
