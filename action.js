@@ -1,7 +1,7 @@
 class Action {
     constructor(id, name, action) {
         this.id = id
-        this.name = NamedNodeMap
+        this.name = name
         this.action = action
     }
 
