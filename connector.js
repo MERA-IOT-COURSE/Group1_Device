@@ -3,25 +3,27 @@ const version = "1.0"
 
 function buildActionsData(actions) {
     var actionsData = []
-    for (var action in actions) {
+
+    actions.forEach(action => {
         actionsData.push({
             "id": action.getId(),
             "name": action.getName()
         })
-    }
+    })
 
     return actionsData
 }
 
 function buildSensorsData(sensors) {
     var sensorsData = []
-    for (var sensor in sensors) {
+
+    sensors.forEach(sensor => {
         sensorsData.push({
             "id": sensor.getId(),
             "type": sensor.getType(),
             "actions": buildActionsData(sensor.getActions())
         })
-    }
+    })
 
     return sensorsData
 }
