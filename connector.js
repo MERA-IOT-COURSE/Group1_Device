@@ -50,21 +50,19 @@ class ConnectionHandler {
         this.client = mqtt.connect(`mqtt://${ip}:${port}`)
         this.device = device
         this.backendId = backendId
-
-        var message = JSON.stringify(buildMessage(
-            "REGISTER",
-            buildInitData(device)
-        ))
-
+        this.registerTimeoutMs = 2 * 1000
+        
+        // Register the device: send registration immediately and then by timeout 
         this.client.on('connect', () => {
-            console.log("Connected to broker")
-            this.client.publish(`init_${backendId}`, message)
-            console.log(`Init called with: ${message}`)
+            console.log("Connected to broker", this.registerTimeoutMs)
+            
+            this.sendRegistration()
+            this.registrationTimer = setInterval(() => { this.sendRegistration() }, this.registerTimeoutMs)
         })
 
-        // TODO: check response code.
-
-        this.client.on('message', this.onMessage)
+        this.client.on('message', (topic, message) => {
+            this.onMessage(topic, message)
+        })
 
         // Register sensors listeners
         device.getSensors().forEach(sensor => {
@@ -78,6 +76,15 @@ class ConnectionHandler {
         console.log(`Incoming message: [${topic}] ${message.toString()}`)
     }
 
+    sendRegistration() {
+        var message = buildMessage(
+            "REGISTER",
+            buildInitData(this.device)
+        )
+
+        this.sendMessage(`init_${this.backendId}`, message)
+    }
+
     sendSensorData(sensor, value, ts) {
         var sensorData = {
             "sensor_id": sensor.getId(),
@@ -85,13 +92,18 @@ class ConnectionHandler {
             "ts": ts
         }
 
-        var message = JSON.stringify(buildMessage(
+        var message = buildMessage(
             "SENSOR_DATA",
             sensorData
-        ))
+        )
+        
+        this.sendMessage(`be_${this.device.getHardwareId()}`, message)
+    }
 
-        this.client.publish(`be_${this.device.getHardwareId()}`, message)
-        console.log(`Sensor data: ${message}`)
+    sendMessage(topic, data) {
+        var message = JSON.stringify(data)
+        this.client.publish(topic, message)
+        console.log(`Sending message:  [${topic}] ${message}`)
     }
 }
 
