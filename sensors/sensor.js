@@ -1,7 +1,9 @@
-const Action = require('./action')
+const Action = require('../action')
+const EventEmitter = require('events').EventEmitter
 
-class Sensor {
+class Sensor extends EventEmitter {
     constructor(id, type) {
+        super()
         this.id = id
         this.type = type
 

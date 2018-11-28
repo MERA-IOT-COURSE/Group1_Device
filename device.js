@@ -1,5 +1,5 @@
 const fs = require('fs')
-const Sensor = require('./sensor')
+const DHT11HumiditySensor = require('./sensors/dht11-humidity')
 const Action = require('./action')
 
 function parseHardwareId() {
@@ -33,7 +33,7 @@ class Device {
         // Sensors:
         // TODO: scan RPi to get a real list of sensors 
         this.sensors = [
-            new Sensor("humidity", "sensor.humidity")
+            new DHT11HumiditySensor()
         ]
     }
 
