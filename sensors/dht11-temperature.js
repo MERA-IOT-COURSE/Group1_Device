@@ -1,4 +1,5 @@
 const Sensor = require('./sensor')
+const Utils = require('../utils')
 const RpiDHTSensor = require('rpi-dht-sensor');
 
 class DHT11TemperatureSensor extends Sensor {
@@ -10,7 +11,7 @@ class DHT11TemperatureSensor extends Sensor {
         var sensor = this
         function readSensorData() {
             var data = sensor.dht.read();
-            sensor.emit("data", sensor, data.temperature.toFixed(2), 0)
+            sensor.emit("data", sensor, data.temperature.toFixed(2), Utils.getTimestamp())
             setTimeout(readSensorData, 1000);
         }
 
