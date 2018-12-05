@@ -50,7 +50,7 @@ class ConnectionHandler {
         this.client = mqtt.connect(`mqtt://${ip}:${port}`)
         this.device = device
         this.backendId = backendId
-        this.registerTimeoutMs = 2 * 1000
+        this.registerTimeoutMs = 60 * 1000
         
         // Register the device: send registration immediately and then by timeout 
         this.client.on('connect', () => {
@@ -70,10 +70,6 @@ class ConnectionHandler {
                 this.sendSensorData(sensor, value, ts)
             })
         })
-    }
-
-    onMessage(topic, message) {
-        console.log(`Incoming message: [${topic}] ${message.toString()}`)
     }
 
     sendRegistration() {
@@ -104,6 +100,70 @@ class ConnectionHandler {
         var message = JSON.stringify(data)
         this.client.publish(topic, message)
         console.log(`Sending message:  [${topic}] ${message}`)
+    }
+
+    onMessage(topic, message) {
+        console.log(`Incoming message: [${topic}] ${message.toString()}`)
+
+        if (topic != `dev_${this.device.getHardwareId()}`)
+            return
+
+        // Must be:
+        // {
+        //     "mid": <message id>,
+        //     "data": <payload specific for mid>
+        // }
+        parsedMessage = JSON.parse(message)
+        switch (parsedMessage.mid) {
+            case 'REGISTER_RESP':
+                onRegistrationResponse(parsedMessage.data)
+                break
+            case 'REQ_DEVICE_ACTION':
+                onDeviceAction(parsedMessage.data)
+                break
+            case 'REQ_SENSOR_ACTION':
+                onSensorAction(parsedMessage.data)
+                break
+        }
+    }
+
+    onRegistrationResponse(data) {
+        if (data.status != 'OK') {
+            console.log(`Registration failure! Reason: ${data.status}`)
+            return
+        }
+
+        if ('registration_delay' in data) {
+            this.registerTimeoutMs = data['registration_delay'] * 1000 // convert to ms
+            clearInterval(this.registrationTimer)
+            this.registrationTimer = setInterval(() => { this.sendRegistration() }, this.registerTimeoutMs)
+        }
+    }
+
+    onDeviceAction(data) {
+        actions = this.device.getActions()
+        action = actions.find((action) => { return action.getId() == data['id'] })
+
+        if (action) {
+            action.run()
+            // TODO: send response 
+        }
+    }
+
+    onSensorAction(data) { 
+        sensors = this.device.getSensors()
+        sensor = sensors.find((sensor) => { return sensor.getId() == data['sensor_id'] })
+
+        if (!sensor)
+            return
+            
+        actions = sensor.getActions()
+        action = actions.find((action) => { return action.getId() == data['id'] })
+
+        if (action) {
+            action.run()
+            // TODO: send response 
+        }
     }
 }
 
