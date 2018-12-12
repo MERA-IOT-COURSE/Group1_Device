@@ -15,10 +15,10 @@ function getFormatter(module) {
             label:getModulePath(module)
         }),
         winston.format.timestamp({
-            format:"YY-MM-DD HH:MM:SS"
+            format:"hh:mm:ss"
         }),
         winston.format.printf(
-            info => `[${info.label}] ${info.level}: ${info.message}`
+            info => `[${info.timestamp}][${info.label}] ${info.level}: ${info.message}`
         )
     );
 }
