@@ -36,7 +36,11 @@ class ServerProtocol extends EventEmitter {
             hander = this.messageHandlers[parsedMessage.mid]
             if (hander) {
                 handler.validate(message)
-                this.emit(handler.getSignalName, message)
+                this.emit(
+                    handler.signalName, 
+                    this.getDeviceIdFromTopic(topic), 
+                    message
+                )
             }
         })
 
@@ -57,9 +61,15 @@ class ServerProtocol extends EventEmitter {
         return JSON.parse(message)
     }
 
-    addNewTopic(topic) {
+    addNewDevice(id) {
+        const topic = `be_${id}`
+
         this.listeningTopics.add(topic)
         client.subscribe(topic)
+    }
+
+    getDeviceIdFromTopic(topic) {
+        return topic.split('_')[1]
     }
 }
 
