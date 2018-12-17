@@ -1,5 +1,6 @@
 const mqtt = require('mqtt')
 const EventEmitter = require('events').EventEmitter
+const log = require('../log')(module)
 
 class MessageHandler 
 {
@@ -16,25 +17,28 @@ class MessageHandler
 
 class ServerProtocol extends EventEmitter {
     constructor(ip, port, backendId) {
-        this.client = mqtt.connect(`mqtt://${ip}:${port}`)
+        super()
+        var brokerUrl = `mqtt://${ip}:${port}`
+        this.client = mqtt.connect(brokerUrl)
         this.listeningTopics = new Set([`init_${backendId}`])
 
         this.client.on('connect', () => {
+            log.info(`Connected to brocker: ${brokerUrl}`)
             this.listeningTopics.forEach(topic => {
-                client.subscribe(topic)
+                this.client.subscribe(topic)
             });
         })
 
         this.client.on('message', (topic, message) => {
-            console.log(`[${topic}] ${message.toString()}`)
+            log.verbose(`[${topic}] ${message.toString()}`)
             
             if (!this.listeningTopics.has(topic))
                 return
 
-            parsedMessage = this.parseMessage(message)
+            var parsedMessage = this.parseMessage(message)
 
-            hander = this.messageHandlers[parsedMessage.mid]
-            if (hander) {
+            var handler = this.messageHandlers[parsedMessage.mid]
+            if (handler) {
                 handler.validate(message)
                 this.emit(
                     handler.signalName, 
@@ -69,6 +73,9 @@ class ServerProtocol extends EventEmitter {
     }
 
     getDeviceIdFromTopic(topic) {
+        if (topic.startsWith('init'))
+            return null
+
         return topic.split('_')[1]
     }
 }
