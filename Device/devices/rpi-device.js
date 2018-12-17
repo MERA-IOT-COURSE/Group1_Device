@@ -6,19 +6,13 @@ const Device = require('./device')
 
 function parseHardwareId() {
     const cpuinfoPath = "/proc/cpuinfo"
-
     var cpuinfo = fs.readFileSync(cpuinfoPath, 'utf-8')
-    var hardwareId = null
 
     // Serial       : 0000000043da31c3
     var hardwareIdRegexp = /Serial\s*:\s*(\w+)/g;
-    
     var match = hardwareIdRegexp.exec(cpuinfo)
-    if (match) {
-        hardwareId = match[1]
-    }
 
-    return hardwareId
+    return match ? match[1] : null
 }
 
 var device = new Device("group1", parseHardwareId())
