@@ -1,16 +1,18 @@
 const ServerProtocol = require('./protocol/server-protocol')
-const log = require('./log')(module)
+const log = require('../Common/logger/log')(module)
+const config = require('../Common/config/config')
 
 class DeviceHandler {
     constructor() {
-        var ip = '10.42.0.11'
-        var port = '1883'
-        var backendId = 'group1'
+        var ip = config.get('broker:ip') || 'localhost'
+        var port = config.get('broker:port') || '1883'
+        var backendId = config.get('broker:backendId') || 'default'
+
         this.serverProtocol = new ServerProtocol(ip, port, backendId)
 
         this.serverProtocol.on('register', (topic, message) => this.onRegister(message))
 
-        log.info(`Listening mqtt broker on ${ip}:${port} with backendId=${backendId}`)
+        log.info(`Starting mqtt broker on ${ip}:${port} with backendId=${backendId}`)
     }
 
     onRegister(message) {

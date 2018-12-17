@@ -1,6 +1,7 @@
 var log = require('../Common/logger/log')(module)
 var config = require('../Common/config/config')
 var app = require('./app')
+var DeviceHandler = require('./device-handler')
 
 app.set('port', config.get('port') || 3000)
 

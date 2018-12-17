@@ -1,6 +1,6 @@
 const mqtt = require('mqtt')
 const EventEmitter = require('events').EventEmitter
-const log = require('../log')(module)
+const log = require('../../Common/logger/log')(module)
 
 class MessageHandler 
 {
@@ -23,7 +23,7 @@ class ServerProtocol extends EventEmitter {
         this.listeningTopics = new Set([`init_${backendId}`])
 
         this.client.on('connect', () => {
-            log.info(`Connected to brocker: ${brokerUrl}`)
+            log.info(`Connected to the broker: ${brokerUrl}`)
             this.listeningTopics.forEach(topic => {
                 this.client.subscribe(topic)
             });
