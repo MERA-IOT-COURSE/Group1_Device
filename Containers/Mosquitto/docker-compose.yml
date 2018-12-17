@@ -1,0 +1,12 @@
+version: "3.1"
+services:
+
+  mosquitto:
+    image: eclipse-mosquitto
+    hostname: mosquitto
+    build: .
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
