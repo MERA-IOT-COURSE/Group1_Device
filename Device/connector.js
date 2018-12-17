@@ -103,7 +103,7 @@ class ConnectionHandler {
     sendMessage(topic, data) {
         var message = JSON.stringify(data)
         this.client.publish(topic, message)
-        console.debug(`Sending message:  [${topic}] ${message}`)
+        log.debug(`Sending message:  [${topic}] ${message}`)
     }
 
     onMessage(topic, message) {
@@ -133,7 +133,7 @@ class ConnectionHandler {
 
     onRegistrationResponse(data) {
         if (data.status != 'OK') {
-            console.log(`Registration failure! Reason: ${data.status}`)
+            log.error(`Registration failure! Reason: ${data.status}`)
             return
         }
 
