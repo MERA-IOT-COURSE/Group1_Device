@@ -1,8 +1,8 @@
-const ServerProtocol = require('./protocol/server-protocol')
-const log = require('../Common/logger/log')(module)
-const config = require('../Common/config/config')
+const ServerProtocol = require('../protocol/server-protocol')
+const log = require('../../Common/logger/log')(module)
+const config = require('../../Common/config/config')
 
-class DeviceHandler {
+class DeviceTransmitter {
     constructor() {
         var ip = config.get('broker:ip') || 'localhost'
         var port = config.get('broker:port') || '1883'
@@ -20,4 +20,4 @@ class DeviceHandler {
     }
 }
 
-module.exports = DeviceHandler
+module.exports = new DeviceTransmitter
