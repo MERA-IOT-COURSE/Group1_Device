@@ -1,4 +1,4 @@
-var log = require('./log')(module)
+var log = require('../Common/logger/log')(module)
 var express = require('express')
 var bodyParser = require('body-parser')
 
