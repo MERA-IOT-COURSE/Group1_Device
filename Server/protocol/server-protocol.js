@@ -120,7 +120,7 @@ class ServerProtocol extends BaseProtocol {
         const topic = `be_${id}`
 
         this.listeningTopics.add(topic)
-        client.subscribe(topic)
+        this.client.subscribe(topic)
     }
 
     getDeviceIdFromTopic(topic) {

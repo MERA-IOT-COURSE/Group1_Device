@@ -27,7 +27,7 @@ class DeviceTransmitter {
 
         // add device to db
         // send notification to frontend
-
+        this.serverProtocol.addNewDevice(deviceId)
         this.serverProtocol.sendMessage(deviceId, ServerProtocol.REGISTER_RESP, {
             status: status,
             registration_delay: this.registrationDelay
