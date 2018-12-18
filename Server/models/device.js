@@ -15,7 +15,7 @@
 const mongoose = require('mongoose')
 
 const deviceSchema = mongoose.Schema({
-    hardwareId: String,
+    deviceId: String,
     name: String
 })
 

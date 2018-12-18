@@ -3,6 +3,8 @@ const log = require('../../Common/logger/log')(module)
 const config = require('../../Common/config/config')
 const db = require('../db/mongoose')
 
+const Device = require('../models/device')
+
 class DeviceTransmitter {
     constructor() {
         const ip = config.get('broker:ip') || 'localhost'
@@ -27,11 +29,22 @@ class DeviceTransmitter {
         let status = 'OK'
 
         // add device to db
-        // send notification to frontend
-        this.serverProtocol.addNewDevice(deviceId)
-        this.serverProtocol.sendMessage(deviceId, ServerProtocol.REGISTER_RESP, {
-            status: status,
-            registration_delay: this.registrationDelay
+        let device = new Device({
+            deviceId: deviceId,
+            name: message.name
+        })
+        device.save((err, device) => {
+            if (err) {
+                log.error('Cannot save device! %s', err)
+                return
+            }
+            
+            // send notification to frontend
+            this.serverProtocol.addNewDevice(deviceId)
+            this.serverProtocol.sendMessage(deviceId, ServerProtocol.REGISTER_RESP, {
+                status: status,
+                registration_delay: this.registrationDelay
+            })
         })
     }
 
