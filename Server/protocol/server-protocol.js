@@ -15,7 +15,31 @@ class MessageHandler
     }
 }
 
-class ServerProtocol extends EventEmitter {
+class BaseProtocol extends EventEmitter {
+    constructor() {
+        super()
+        this.messageHandlers = {
+            [BaseProtocol.REGISTER]: new MessageHandler(BaseProtocol.REGISTER),
+            [BaseProtocol.REGISTER_RESP]: new MessageHandler(BaseProtocol.REGISTER_RESP),
+            [BaseProtocol.SENSOR_DATA]: new MessageHandler(BaseProtocol.SENSOR_DATA),
+            [BaseProtocol.REQ_DEVICE_ACTION]: new MessageHandler(BaseProtocol.REQ_DEVICE_ACTION),
+            [BaseProtocol.REQ_SENSOR_ACTION]: new MessageHandler(BaseProtocol.REQ_SENSOR_ACTION),
+            [BaseProtocol.RESP_DEVICE_ACTION]: new MessageHandler(BaseProtocol.RESP_DEVICE_ACTION),
+            [BaseProtocol.RESP_SENSOR_ACTION]: new MessageHandler(BaseProtocol.RESP_SENSOR_ACTION)
+        }
+    }
+}
+
+BaseProtocol.REGISTER = 'REGISTER'
+BaseProtocol.REGISTER_RESP = 'REGISTER_RESP',
+BaseProtocol.SENSOR_DATA = 'SENSOR_DATA',
+BaseProtocol.REQ_DEVICE_ACTION = 'REQ_DEVICE_ACTION',
+BaseProtocol.REQ_SENSOR_ACTION = 'REQ_SENSOR_ACTION',
+BaseProtocol.RESP_DEVICE_ACTION = 'RESP_DEVICE_ACTION',
+BaseProtocol.RESP_SENSOR_ACTION = 'RESP_SENSOR_ACTION'
+
+
+class ServerProtocol extends BaseProtocol {
     constructor(ip, port, backendId) {
         super()
         var brokerUrl = `mqtt://${ip}:${port}`
@@ -30,30 +54,23 @@ class ServerProtocol extends EventEmitter {
         })
 
         this.client.on('message', (topic, message) => {
-            log.verbose(`[${topic}] ${message.toString()}`)
+            log.verbose(`[in][${topic}] ${message.toString()}`)
             
             if (!this.listeningTopics.has(topic))
                 return
 
-            var parsedMessage = this.parseMessage(message)
-
-            var handler = this.messageHandlers[parsedMessage.mid]
-            if (handler) {
-                handler.validate(message)
+            let parsedMessage = this.parseMessage(message)
+            if (parsedMessage) {
                 this.emit(
-                    handler.signalName, 
+                    parsedMessage.signalName, 
                     this.getDeviceIdFromTopic(topic), 
-                    message
+                    parsedMessage.data
                 )
             }
+            else {
+                log.error('Cannot parse message!')
+            }
         })
-
-        this.messageHandlers = {
-            'REGISTER': new MessageHandler('register'),
-            'SENSOR_DATA': new MessageHandler('sensor data'),
-            'RESP_DEVICE_ACTION': new MessageHandler('device action response'),
-            'RESP_SENSOR_ACTION': new MessageHandler('sensor action response')
-        }
     }
 
     parseMessage(message) {
@@ -62,14 +79,48 @@ class ServerProtocol extends EventEmitter {
         //     "mid": <message id>,
         //     "data": <payload specific for mid>
         // }
-        return JSON.parse(message)
+        const parsedMessage = JSON.parse(message)
+
+        var handler = this.messageHandlers[parsedMessage.mid]
+        if (handler && handler.validate(message)) {
+            return {
+                signalName: handler.signalName,
+                data: JSON.parse(message).data
+            }
+        }
+
+        return null
+    }
+
+    sendMessage(deviceId, type, payload) {
+        const message = {
+            mid: type,
+            data: payload
+        }
+
+        const topic = `dev_${deviceId}`
+        const messageString = JSON.stringify(message)
+
+        const handler = this.messageHandlers[type]
+        if (handler && handler.validate(message)) {
+            log.verbose(`[out][${topic}] ${messageString}`)
+            this.client.publish(topic, messageString)
+        }
+        else {
+            if (!handler) {
+                log.error(`Message handler for ${type} not found!`)
+            }
+            else {
+                log.error(`Invalid message format: ${messageString}`)
+            }
+        }
     }
 
     addNewDevice(id) {
         const topic = `be_${id}`
 
         this.listeningTopics.add(topic)
-        client.subscribe(topic)
+        this.client.subscribe(topic)
     }
 
     getDeviceIdFromTopic(topic) {

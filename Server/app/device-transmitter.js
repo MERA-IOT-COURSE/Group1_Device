@@ -4,19 +4,60 @@ const config = require('../../Common/config/config')
 
 class DeviceTransmitter {
     constructor() {
-        var ip = config.get('broker:ip') || 'localhost'
-        var port = config.get('broker:port') || '1883'
-        var backendId = config.get('broker:backendId') || 'default'
-
+        const ip = config.get('broker:ip') || 'localhost'
+        const port = config.get('broker:port') || '1883'
+        const backendId = config.get('broker:backendId') || 'default'
+        
+        this.registrationDelay = 60
         this.serverProtocol = new ServerProtocol(ip, port, backendId)
 
-        this.serverProtocol.on('register', (topic, message) => this.onRegister(message))
+        this.serverProtocol.on(ServerProtocol.REGISTER, (deviceId, message) => this.onRegister(message))
+        this.serverProtocol.on(ServerProtocol.SENSOR_DATA, (deviceId, message) => this.onSensorData(deviceId, message))
+        this.serverProtocol.on(ServerProtocol.RESP_DEVICE_ACTION, (deviceId, message) => this.onDeviceActionResponse(deviceId, message))
+        this.serverProtocol.on(ServerProtocol.RESP_SENSOR_ACTION, (deviceId, message) => this.onSensorActionResponse(deviceId, message))
 
         log.info(`Starting mqtt broker on ${ip}:${port} with backendId=${backendId}`)
     }
 
     onRegister(message) {
-        log.info('Got register from %s', message)
+        const deviceId = message.hw_id
+        log.info('Got register from %s', deviceId)
+
+        let status = 'OK'
+
+        // add device to db
+        // send notification to frontend
+        this.serverProtocol.addNewDevice(deviceId)
+        this.serverProtocol.sendMessage(deviceId, ServerProtocol.REGISTER_RESP, {
+            status: status,
+            registration_delay: this.registrationDelay
+        })
+    }
+
+    onSensorData(deviceId, message) {
+        // add new data to db
+        // send notification to frontend
+    }
+
+    onDeviceActionResponse(deviceId, message) {
+        // send notification to frontend
+    }
+
+    onSensorActionResponse(deviceId, message) {
+        // send notification to frontend
+    }
+
+    sendDeviceAction(deviceId, action) {
+        this.serverProtocol.sendMessage(deviceId, ServerProtocol.REQ_DEVICE_ACTION, {
+            id: action
+        })
+    }
+
+    sendSensorAction(deviceId, sensorId, action) {
+        this.serverProtocol.sendMessage(deviceId, ServerProtocol.REQ_SENSOR_ACTION, {
+            id: action,
+            sensor_id: sensorId
+        })
     }
 }
 
