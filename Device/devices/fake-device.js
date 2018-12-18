@@ -2,7 +2,8 @@ const Device = require('./device')
 const Action = require('../action')
 const FakeSensor = require('../sensors/fake-sensor')
 
-var device = new Device("fake_name", "fake_hardware_id")
+var getMaxRandomInt = () => Math.floor(Number.MAX_SAFE_INTEGER * Math.random())
+const device = new Device('fake_device', `hw_${getMaxRandomInt()}`)
 
 const sensorDataSendIntervalMs = 1000
 device.addSensor(new FakeSensor(sensorDataSendIntervalMs))
