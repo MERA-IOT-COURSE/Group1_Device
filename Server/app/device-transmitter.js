@@ -1,6 +1,7 @@
 const ServerProtocol = require('../protocol/server-protocol')
 const log = require('../../Common/logger/log')(module)
 const config = require('../../Common/config/config')
+const db = require('../db/mongoose')
 
 class DeviceTransmitter {
     constructor() {
