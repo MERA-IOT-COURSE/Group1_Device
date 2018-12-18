@@ -1,0 +1,18 @@
+
+/*** Error Dialog ***/
+#error {
+    display: none;
+}
+
+.error-dialog .ui-dialog-titlebar {
+    background: #ff7d7d;
+}
+
+/*** Success Dialog ***/
+#success {
+    display: none;
+}
+
+.success-dialog .ui-dialog-titlebar {
+    background: #85ff7d;
+}
