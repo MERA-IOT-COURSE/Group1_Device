@@ -1,16 +1,13 @@
 var log = require('../../Common/logger/log')(module)
 var express = require('express')
 var bodyParser = require('body-parser')
+var path = require('path')
 
 var app = express()
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
-
-app.use('/', (req, res, next) => {
-    log.info('Got /')
-    next()
-})
+app.use(express.static(path.join(__dirname, '..', 'frontend')))
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
