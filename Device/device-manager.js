@@ -1,7 +1,12 @@
-const device = require('./device')
+const config = require('./config')
+
+const deviceModulePath = config.get('fake-device') ? './devices/fake-device' : './devices/rpi-device'
+const device = require(deviceModulePath)
 const connector = require('./connector')
-const configLoader = require('./config-loader')
 
-var config = configLoader.load("config.json")
-
-var connection = new connector.ConnectionHandler(config.ip, config.port, device, config.backendId) 
+var connection = new connector.ConnectionHandler(
+    config.get('ip'),
+    config.get('port'),
+    device,
+    config.get('backendId')
+) 

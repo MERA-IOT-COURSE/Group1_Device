@@ -1,3 +1,4 @@
+const log = require('../Common/logger/log')(module)
 const mqtt = require('mqtt')
 const version = "1.0"
 
@@ -47,14 +48,17 @@ function buildMessage(messageId, data) {
 
 class ConnectionHandler {
     constructor(ip, port, device, backendId) {
-        this.client = mqtt.connect(`mqtt://${ip}:${port}`)
+        const brokerUrl = `mqtt://${ip}:${port}`
+        log.info(`Connecting to broker ${brokerUrl}...`)
+
+        this.client = mqtt.connect(brokerUrl)
         this.device = device
         this.backendId = backendId
         this.registerTimeoutMs = 60 * 1000
         
         // Register the device: send registration immediately and then by timeout 
         this.client.on('connect', () => {
-            console.log("Connected to broker", this.registerTimeoutMs)
+            log.info("Connected to broker", this.registerTimeoutMs)
             
             this.sendRegistration()
             this.registrationTimer = setInterval(() => { this.sendRegistration() }, this.registerTimeoutMs)
@@ -99,11 +103,11 @@ class ConnectionHandler {
     sendMessage(topic, data) {
         var message = JSON.stringify(data)
         this.client.publish(topic, message)
-        console.log(`Sending message:  [${topic}] ${message}`)
+        log.debug(`Sending message:  [${topic}] ${message}`)
     }
 
     onMessage(topic, message) {
-        console.log(`Incoming message: [${topic}] ${message.toString()}`)
+        log.debug(`Incoming message: [${topic}] ${message.toString()}`)
 
         if (topic != `dev_${this.device.getHardwareId()}`)
             return
@@ -129,7 +133,7 @@ class ConnectionHandler {
 
     onRegistrationResponse(data) {
         if (data.status != 'OK') {
-            console.log(`Registration failure! Reason: ${data.status}`)
+            log.error(`Registration failure! Reason: ${data.status}`)
             return
         }
 
