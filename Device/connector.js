@@ -56,12 +56,16 @@ class ConnectionHandler {
         this.backendId = backendId
         this.registerTimeoutMs = 60 * 1000
         
+        this.inTopic = `dev_${this.device.getHardwareId()}`
+        this.outTopic = `be_${this.device.getHardwareId()}`
+
         // Register the device: send registration immediately and then by timeout 
         this.client.on('connect', () => {
             log.info("Connected to broker", this.registerTimeoutMs)
             
             this.sendRegistration()
             this.registrationTimer = setInterval(() => { this.sendRegistration() }, this.registerTimeoutMs)
+            this.client.subscribe(this.inTopic)
         })
 
         this.client.on('message', (topic, message) => {
@@ -97,7 +101,7 @@ class ConnectionHandler {
             sensorData
         )
         
-        this.sendMessage(`be_${this.device.getHardwareId()}`, message)
+        this.sendMessage(this.outTopic, message)
     }
 
     sendMessage(topic, data) {
@@ -109,7 +113,7 @@ class ConnectionHandler {
     onMessage(topic, message) {
         log.debug(`Incoming message: [${topic}] ${message.toString()}`)
 
-        if (topic != `dev_${this.device.getHardwareId()}`)
+        if (topic != this.inTopic)
             return
 
         // Must be:
@@ -117,16 +121,16 @@ class ConnectionHandler {
         //     "mid": <message id>,
         //     "data": <payload specific for mid>
         // }
-        parsedMessage = JSON.parse(message)
+        const parsedMessage = JSON.parse(message)
         switch (parsedMessage.mid) {
             case 'REGISTER_RESP':
-                onRegistrationResponse(parsedMessage.data)
+                this.onRegistrationResponse(parsedMessage.data)
                 break
             case 'REQ_DEVICE_ACTION':
-                onDeviceAction(parsedMessage.data)
+                this.onDeviceAction(parsedMessage.data)
                 break
             case 'REQ_SENSOR_ACTION':
-                onSensorAction(parsedMessage.data)
+                this.onSensorAction(parsedMessage.data)
                 break
         }
     }
