@@ -54,7 +54,7 @@ class DeviceTransmitter {
         let sensorData = new SensorData({
             deviceId: deviceId,
             sensorId: message.sensor_id,
-            values: message.value,
+            value: message.value,
             ts: message.ts
         })
 

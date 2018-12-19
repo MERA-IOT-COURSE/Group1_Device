@@ -9,7 +9,7 @@ const mongoose = require('mongoose')
 const sensorDataSchema = mongoose.Schema({
     deviceId: String,
     sensorId: String,
-    values: String,
+    value: String,
     ts: Number
 })
 
