@@ -11,3 +11,4 @@ const actionSchema = mongoose.Schema({
 })
 
 module.exports = mongoose.model('Action', actionSchema)
+module.exports.schema = actionSchema

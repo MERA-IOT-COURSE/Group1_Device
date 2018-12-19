@@ -5,12 +5,13 @@
 // }
 
 const mongoose = require('mongoose')
-const Action = require('./action')
+const actionSchema = require('./action').schema
 
 const sensorSchema = mongoose.Schema({
     id: String,
     type: String,
-    actions: [Action]
+    actions: [actionSchema]
 })
 
 module.exports = mongoose.model('Sensor', sensorSchema)
+module.exports.schema = sensorSchema
