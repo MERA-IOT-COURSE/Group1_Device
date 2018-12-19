@@ -6,17 +6,16 @@
 //   "actions": [Optional array of device actions]
 // }
 
-// {
-//     "id": <Unique id of sensor>,
-//     "type": <Sensor type>,
-//     "actions": [Optional array of sensor specific actions]
-// }
-
 const mongoose = require('mongoose')
+const sensorSchema = require('./sensor').schema
+const actionSchema = require('./action').schema
 
 const deviceSchema = mongoose.Schema({
     deviceId: String,
-    name: String
+    name: String,
+    sensors: [sensorSchema],
+    actions: [actionSchema]
 })
 
 module.exports = mongoose.model('Device', deviceSchema)
+module.exports.schema = deviceSchema

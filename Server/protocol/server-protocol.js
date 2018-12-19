@@ -127,7 +127,12 @@ class ServerProtocol extends BaseProtocol {
         if (topic.startsWith('init'))
             return null
 
-        return topic.split('_')[1]
+        const prefix = 'be_'
+
+        if (topic.indexOf(prefix) == 0) {
+            topic = topic.slice(prefix.length)
+        }
+        return topic
     }
 }
 
