@@ -4,6 +4,7 @@ const config = require('../../Common/config/config')
 const db = require('../db/mongoose')
 
 const Device = require('../models/device')
+const SensorData = require('../models/sensor-data')
 
 class DeviceTransmitter {
     constructor() {
@@ -39,7 +40,7 @@ class DeviceTransmitter {
                 return
             }
             
-            // send notification to frontend
+            // TODO: send notification to frontend
             this.serverProtocol.addNewDevice(deviceId)
             this.serverProtocol.sendMessage(deviceId, ServerProtocol.REGISTER_RESP, {
                 status: status,
@@ -50,15 +51,29 @@ class DeviceTransmitter {
 
     onSensorData(deviceId, message) {
         // add new data to db
-        // send notification to frontend
+        let sensorData = new SensorData({
+            deviceId: deviceId,
+            sensorId: message.sensor_id,
+            values: message.value,
+            ts: message.ts
+        })
+
+        sensorData.save((err, sensorData) => {
+            if (err) {
+                log.error('Cannot save sensor data! %s', err)
+                return
+            }
+            
+            // TODO: send notification to frontend
+        })
     }
 
     onDeviceActionResponse(deviceId, message) {
-        // send notification to frontend
+        // TODO: send notification to frontend
     }
 
     onSensorActionResponse(deviceId, message) {
-        // send notification to frontend
+        // TODO: send notification to frontend
     }
 
     sendDeviceAction(deviceId, action) {
