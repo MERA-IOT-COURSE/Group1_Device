@@ -1,17 +1,27 @@
 const SensorData = require('../models/sensor-data')
 
-function add(deviceId, message, callback) {
-    // add new data to db
-    let sensorData = new SensorData({
-        deviceId: deviceId,
-        sensorId: message.sensor_id,
-        value: message.value,
-        ts: message.ts
-    })
-
-    sensorData.save(callback)
-}
-
 module.exports = {
-    add: add
+    add(deviceId, message, callback) {
+        // add new data to db
+        let sensorData = new SensorData({
+            deviceId: deviceId,
+            sensorId: message.sensor_id,
+            value: message.value,
+            ts: message.ts
+        })
+
+        sensorData.save(callback)
+    },
+
+    findLastValue(deviceId, sensorId, callback) {
+        SensorData.findOne({
+            deviceId: deviceId,
+            sensorId: sensorId
+        })
+        .sort('-ts')
+        .exec((err, sensorData) => {
+            let value = !err ? sensorData.value : null
+            callback(err, value)
+        })
+    }
 }

@@ -1,3 +1,4 @@
+var config = require('../../Common/config/config')
 var log = require('../../Common/logger/log')(module)
 var express = require('express')
 var bodyParser = require('body-parser')
@@ -11,6 +12,14 @@ var app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(path.join(__dirname, '..', 'frontend')))
+
+
+if (config.get('NODE_ENV') !== 'production') {
+    app.use((req, res, next) => {
+        log.verbose('%s %s', req.method, req.url)
+        next()
+    })
+}
 
 app.use('/api/devices', deviceRoutes)
 

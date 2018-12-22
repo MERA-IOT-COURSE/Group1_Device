@@ -41,13 +41,14 @@ module.exports = {
         device.save(callback)
     },
 
-    findAll() {
-        return Device.find()
+    findAll(callback) {
+        Device.find().exec(callback)
     },
 
-    findOne(id) {
+    findOne(id, callback) {
         return Device.findOne({
             deviceId: id
         })
+        .exec(callback)
     }
 }

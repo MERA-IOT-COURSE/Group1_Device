@@ -1,13 +1,13 @@
 const express = require('express')
 const log = require('../../Common/logger/log')(module)
+
 const deviceController = require('../controllers/device')
+const sensorDataController = require('../controllers/sensor-data')
 
 const router = express.Router()
 
 router.get('/', function(req, res) {
-    const devicesQuery = deviceController.findAll()
-    
-    devicesQuery.exec((err, devices) => {
+    deviceController.findAll((err, devices) => {
         if (err) {
             log.error(err)
             return
@@ -27,9 +27,8 @@ router.get('/', function(req, res) {
 
 router.get('/:deviceId/actions', function(req, res) {
     const deviceId = req.params.deviceId
-    const devicesQuery = deviceController.findOne(deviceId)
     
-    devicesQuery.exec((err, device) => {
+    deviceController.findOne(deviceId, (err, device) => {
         if (err) {
             log.error(err)
             return
@@ -54,16 +53,15 @@ router.get('/:deviceId/actions', function(req, res) {
 
 router.get('/:deviceId/sensors', function(req, res) {
     const deviceId = req.params.deviceId
-    const devicesQuery = deviceController.findOne(deviceId)
     
-    devicesQuery.exec((err, device) => {
+    deviceController.findOne(deviceId, (err, device) => {
         if (err) {
             log.error(err)
             return
         }
 
         if (!device) {
-            log.error(`Device ${deviceId} not found!`)
+            log.error(`Device ${deviceId} not found, cannot get sensors!`)
             return
         }
 
@@ -77,6 +75,28 @@ router.get('/:deviceId/sensors', function(req, res) {
         }
 
         res.json(result)
+    })
+})
+
+router.get('/:deviceId/sensors/:sensorId', function(req, res) {
+    const deviceId = req.params.deviceId
+    const sensorId = req.params.sensorId
+    sensorDataController.findLastValue(deviceId, sensorId, (err, value) => {
+        if (err) {
+            log.error(err)
+            return
+        }
+
+        if (!value) {
+            log.error(`No value for ${sensorId} of device ${deviceId}!`)
+            return
+        }
+
+        log.verbose(value)
+
+        res.json({
+            value: value
+        })
     })
 })
 
