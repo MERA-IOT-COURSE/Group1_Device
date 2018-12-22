@@ -36,3 +36,73 @@ function parse_data(data) {
         throw e;
     }
 }
+
+function Timer(fn, t) {
+    /*  Timer object that is decorator of clearInterval function  */
+    let timer_obj = null;
+
+    this.stop = function() {
+        if (timer_obj) {
+            clearInterval(timer_obj);
+            timer_obj = null;
+        }
+        return this;
+    }
+
+    this.start = function() {
+        if (!timer_obj) {
+            this.stop();
+            timer_obj = setInterval(fn, t);
+        }
+        return this;
+    }
+
+    this.run_once = function() {
+        if (!timer_obj) {
+            this.stop();
+            fn();
+        }
+        return this;
+    }
+}
+
+function Device(id, sensors) {
+    let _id = id;
+    let _sensors = sensors;
+    let _started = false;
+
+    this.stop_refreshing = function() {
+        console.log('Device "' + _id + '" STOPS refreshing')
+        if (_sensors && _started) {
+            _sensors.forEach(function(sensor, i, arr) {
+                sensor.timer.stop();
+            });
+        }
+        _started = false;
+        return this;
+    }
+
+    this.start_refreshing = function() {
+        console.log('Device "' + _id + '" STARTS refreshing')
+        if (_sensors && !_started) {
+            _sensors.forEach(function(sensor, i, arr) {
+                sensor.timer.start();
+            });
+        }
+        _started = true;
+        return this;
+    }
+
+    this.refresh_once = function() {
+        console.log('Device "' + _id + '" REFRESH ONCE')
+        if (_started) {
+            this.stop_refreshing();
+        }
+        if (_sensors) {
+            _sensors.forEach(function(sensor, i, arr) {
+                sensor.timer.run_once();
+            });
+        }
+        return this;
+    }
+}
