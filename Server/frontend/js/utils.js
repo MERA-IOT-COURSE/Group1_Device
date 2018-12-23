@@ -24,12 +24,20 @@ function show_success(text) {
     });
 }
 
+function is_string(obj) {
+    return Object.prototype.toString.call(obj) === '[object String]';
+}
 
 function parse_data(data) {
     /*  Parse JSON data  */
     console.log('Parsing data: ' + data);
     try {
-        return JSON.parse(data);
+        if (is_string(data)) {
+            return JSON.parse(data);
+        }
+        else {
+            return data;
+        }
     } catch (e) {
         console.log('JSON parsing failed. Error: ' + e);
         show_error('JSON parsing failed');

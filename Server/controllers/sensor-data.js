@@ -20,6 +20,9 @@ module.exports = {
         })
         .sort('-ts')
         .exec((err, sensorData) => {
+            if (!err && !sensorData) {
+                err = 'No value for `${sensorId}` sensor!'
+            }
             let value = !err ? sensorData.value : null
             callback(err, value)
         })
