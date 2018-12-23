@@ -68,9 +68,19 @@ router.get('/:deviceId/sensors', function(req, res) {
         let result = []
 
         for (let sensor of device.sensors) {
+
+            let actions = []
+            for (let action of sensor.actions) {
+                actions.push({
+                    id: action.id,
+                    name: action.name
+                })
+            }
+
             result.push({
                 id: sensor.id,
-                name: sensor.type
+                name: sensor.type,
+                actions: actions
             })
         }
 
@@ -92,10 +102,8 @@ router.get('/:deviceId/sensors/:sensorId', function(req, res) {
             return
         }
 
-        log.verbose(value)
-
         res.json({
-            value: value
+            value: parseInt(value, 10)
         })
     })
 })
