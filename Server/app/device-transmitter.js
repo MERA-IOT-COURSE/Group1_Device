@@ -3,8 +3,8 @@ const log = require('../../Common/logger/log')(module)
 const config = require('../../Common/config/config')
 const db = require('../db/mongoose')
 
-const DeviceController = require('../controllers/device')
-const SensorDataController = require('../controllers/sensor-data')
+const deviceController = require('../controllers/device')
+const sensorDataController = require('../controllers/sensor-data')
 
 class DeviceTransmitter {
     constructor() {
@@ -29,7 +29,7 @@ class DeviceTransmitter {
 
         let status = 'OK'
 
-        DeviceController.createOrUpdate(deviceId, message, (err, device) => {
+        deviceController.createOrUpdate(deviceId, message, (err, device) => {
             if (err) {
                 log.error('Cannot save device! %s', err)
                 return
@@ -45,7 +45,7 @@ class DeviceTransmitter {
     }
 
     onSensorData(deviceId, message) {
-        SensorDataController.add(deviceId, message, (err, sensorData) => {
+        sensorDataController.add(deviceId, message, (err, sensorData) => {
             if (err) {
                 log.error('Cannot save sensor data! %s', err)
                 return
