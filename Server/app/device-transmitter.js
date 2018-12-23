@@ -63,13 +63,13 @@ class DeviceTransmitter {
         // TODO: send notification to frontend
     }
 
-    sendDeviceAction(deviceId, action) {
+    sendDeviceAction(deviceId, action, callback) {
         this.serverProtocol.sendMessage(deviceId, ServerProtocol.REQ_DEVICE_ACTION, {
             id: action
         })
     }
 
-    sendSensorAction(deviceId, sensorId, action) {
+    sendSensorAction(deviceId, sensorId, action, callback) {
         this.serverProtocol.sendMessage(deviceId, ServerProtocol.REQ_SENSOR_ACTION, {
             id: action,
             sensor_id: sensorId
