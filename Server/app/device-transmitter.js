@@ -20,6 +20,8 @@ class DeviceTransmitter {
         this.serverProtocol.on(ServerProtocol.RESP_DEVICE_ACTION, (deviceId, message) => this.onDeviceActionResponse(deviceId, message))
         this.serverProtocol.on(ServerProtocol.RESP_SENSOR_ACTION, (deviceId, message) => this.onSensorActionResponse(deviceId, message))
 
+        this.responseCallbacks = new Map()
+
         log.info(`Starting mqtt broker on ${ip}:${port} with backendId=${backendId}`)
     }
 
@@ -56,20 +58,37 @@ class DeviceTransmitter {
     }
 
     onDeviceActionResponse(deviceId, message) {
-        // TODO: send notification to frontend
+        const actionId = message.id
+        const key = [deviceId, actionId].toString()
+        
+        let callback = this.responseCallbacks.get(key)
+        if (callback) {
+            this.responseCallbacks.delete(key)
+            callback(message)
+        }
     }
 
     onSensorActionResponse(deviceId, message) {
-        // TODO: send notification to frontend
+        const actionId = message.id
+        const sensorId = message.sensor_id
+        const key = [deviceId, sensorId, actionId].toString()
+        
+        let callback = this.responseCallbacks.get(key)
+        if (callback) {
+            this.responseCallbacks.delete(key)
+            callback(message)
+        }
     }
 
-    sendDeviceAction(deviceId, action) {
+    sendDeviceAction(deviceId, action, callback) {
+        this.responseCallbacks.set([deviceId, action].toString(), callback)
         this.serverProtocol.sendMessage(deviceId, ServerProtocol.REQ_DEVICE_ACTION, {
             id: action
         })
     }
 
-    sendSensorAction(deviceId, sensorId, action) {
+    sendSensorAction(deviceId, sensorId, action, callback) {
+        this.responseCallbacks.set([deviceId, sensorId, action].toString(), callback)
         this.serverProtocol.sendMessage(deviceId, ServerProtocol.REQ_SENSOR_ACTION, {
             id: action,
             sensor_id: sensorId

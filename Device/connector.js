@@ -104,6 +104,41 @@ class ConnectionHandler {
         this.sendMessage(this.outTopic, message)
     }
 
+    sendSensorActionResponse(sensor, action, status, data) {
+        var responseData = {
+            "id": action.getId(),
+            "sensor_id": sensor.getId(),
+            "status": status,
+        }
+
+        if (data) {
+            responseData.data = data
+        }
+
+        var message = buildMessage(
+            'RESP_SENSOR_ACTION',
+            responseData
+        )
+        this.sendMessage(this.outTopic, message)
+    }
+
+    sendDeviceActionResponse(action, status, data) {
+        var responseData = {
+            "id": action.getId(),
+            "status": status,
+        }
+
+        if (data) {
+            responseData.data = data
+        }
+
+        var message = buildMessage(
+            'RESP_DEVICE_ACTION',
+            responseData
+        )
+        this.sendMessage(this.outTopic, message)
+    }
+
     sendMessage(topic, data) {
         var message = JSON.stringify(data)
         this.client.publish(topic, message)
@@ -149,28 +184,30 @@ class ConnectionHandler {
     }
 
     onDeviceAction(data) {
-        actions = this.device.getActions()
-        action = actions.find((action) => { return action.getId() == data['id'] })
+        const actions = this.device.getActions()
+        const action = actions.find((action) => { return action.getId() == data['id'] })
 
         if (action) {
-            action.run()
-            // TODO: send response 
+            let [err, data] = action.run()
+            let status = err ? `FAIL: ${err}` : "OK"
+            this.sendDeviceActionResponse(action, status, data)
         }
     }
 
     onSensorAction(data) { 
-        sensors = this.device.getSensors()
-        sensor = sensors.find((sensor) => { return sensor.getId() == data['sensor_id'] })
+        const sensors = this.device.getSensors()
+        const sensor = sensors.find((sensor) => { return sensor.getId() == data['sensor_id'] })
 
         if (!sensor)
             return
             
-        actions = sensor.getActions()
-        action = actions.find((action) => { return action.getId() == data['id'] })
+        const actions = sensor.getActions()
+        const action = actions.find((action) => { return action.getId() == data['id'] })
 
         if (action) {
-            action.run()
-            // TODO: send response 
+            let [err, data] = action.run()
+            let status = err ? `FAIL: ${err}` : "OK"
+            this.sendSensorActionResponse(sensor, action, status, data)
         }
     }
 }
