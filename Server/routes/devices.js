@@ -111,7 +111,7 @@ router.get('/:deviceId/actions/:actionId', (req, res) => {
     
     deviceTransmitter.sendDeviceAction(deviceId, actionId, (response) => {
         res.json({
-            "res": response ? "OK" : "Failed!"
+            "res": response ? response.status : "Failed!"
         })
     })
 })
@@ -123,7 +123,7 @@ router.get('/:deviceId/sensors/:sensorId/actions/:actionId', (req, res) => {
     
     deviceTransmitter.sendSensorAction(deviceId, sensorId, actionId, (response) => {
         res.json({
-            "res": response ? "OK" : "Failed!"
+            "res": response ? response.status : "Failed!"
         })
     })
 })

@@ -8,7 +8,7 @@ const device = new Device('fake_device', `hw_${getMaxRandomInt()}`)
 const sensorDataSendIntervalMs = 1000
 device.addSensor(new FakeSensor(sensorDataSendIntervalMs))
 
-device.addAction(new Action("custom.reboot", "Reboot", {}))
-device.addAction(new Action("custom.shutdown", "Shutdown", {}))
+device.addAction(new Action("custom.reboot", "Reboot", () => {}))
+device.addAction(new Action("custom.shutdown", "Shutdown", () => {}))
 
 module.exports = device

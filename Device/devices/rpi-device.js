@@ -24,7 +24,7 @@ device.addSensor(new DHT11TemperatureSensor())
         
 // Default actions:
 // TODO: implement actions
-device.addAction(new Action("custom.reboot", "Reboot", {}))
-device.addAction(new Action("custom.shutdown", "Shutdown", {}))
+device.addAction(new Action("custom.reboot", "Reboot", () => {}))
+device.addAction(new Action("custom.shutdown", "Shutdown", () => {}))
 
 module.exports = device
