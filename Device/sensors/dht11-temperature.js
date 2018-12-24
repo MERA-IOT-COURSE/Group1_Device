@@ -1,21 +1,16 @@
 const Sensor = require('./sensor')
-const Utils = require('../app/utils')
 const RpiDHTSensor = require('rpi-dht-sensor');
 
 class DHT11TemperatureSensor extends Sensor {
-    constructor() {
+    constructor(gpioPin) {
         super("temperature", "sensor.temperature")
 
-        this.dht = new RpiDHTSensor.DHT11(4);
+        this.dht = new RpiDHTSensor.DHT11(gpioPin);
+    }
 
-        var sensor = this
-        function readSensorData() {
-            var data = sensor.dht.read();
-            sensor.emit("data", sensor, data.temperature.toFixed(2), Utils.getTimestamp())
-            setTimeout(readSensorData, 1000);
-        }
-
-        readSensorData();
+    readData() {
+        const data = sensor.dht.read()
+        return data.temperature.toFixed(2)
     }
 }
 

@@ -31,11 +31,8 @@ class Device {
     }
 
     runAction(actionId) {
-        if (actionId >= this.actions.length)
-            return
-        
-        var action = this.actions[actionId]
-        action.run()
+        const action = this.actions.find((action) => { return action.getId() == actionId })
+        return action ? action.run() : null
     }
 }
 
