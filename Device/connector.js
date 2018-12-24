@@ -1,3 +1,4 @@
+const log = require('../Common/logger/log')(module)
 const mqtt = require('mqtt')
 const version = "1.0"
 
@@ -47,17 +48,24 @@ function buildMessage(messageId, data) {
 
 class ConnectionHandler {
     constructor(ip, port, device, backendId) {
-        this.client = mqtt.connect(`mqtt://${ip}:${port}`)
+        const brokerUrl = `mqtt://${ip}:${port}`
+        log.info(`Connecting to broker ${brokerUrl}...`)
+
+        this.client = mqtt.connect(brokerUrl)
         this.device = device
         this.backendId = backendId
         this.registerTimeoutMs = 60 * 1000
         
+        this.inTopic = `dev_${this.device.getHardwareId()}`
+        this.outTopic = `be_${this.device.getHardwareId()}`
+
         // Register the device: send registration immediately and then by timeout 
         this.client.on('connect', () => {
-            console.log("Connected to broker", this.registerTimeoutMs)
+            log.info("Connected to broker", this.registerTimeoutMs)
             
             this.sendRegistration()
             this.registrationTimer = setInterval(() => { this.sendRegistration() }, this.registerTimeoutMs)
+            this.client.subscribe(this.inTopic)
         })
 
         this.client.on('message', (topic, message) => {
@@ -93,19 +101,54 @@ class ConnectionHandler {
             sensorData
         )
         
-        this.sendMessage(`be_${this.device.getHardwareId()}`, message)
+        this.sendMessage(this.outTopic, message)
+    }
+
+    sendSensorActionResponse(sensor, action, status, data) {
+        var responseData = {
+            "id": action.getId(),
+            "sensor_id": sensor.getId(),
+            "status": status,
+        }
+
+        if (data) {
+            responseData.data = data
+        }
+
+        var message = buildMessage(
+            'RESP_SENSOR_ACTION',
+            responseData
+        )
+        this.sendMessage(this.outTopic, message)
+    }
+
+    sendDeviceActionResponse(action, status, data) {
+        var responseData = {
+            "id": action.getId(),
+            "status": status,
+        }
+
+        if (data) {
+            responseData.data = data
+        }
+
+        var message = buildMessage(
+            'RESP_DEVICE_ACTION',
+            responseData
+        )
+        this.sendMessage(this.outTopic, message)
     }
 
     sendMessage(topic, data) {
         var message = JSON.stringify(data)
         this.client.publish(topic, message)
-        console.log(`Sending message:  [${topic}] ${message}`)
+        log.debug(`Sending message:  [${topic}] ${message}`)
     }
 
     onMessage(topic, message) {
-        console.log(`Incoming message: [${topic}] ${message.toString()}`)
+        log.debug(`Incoming message: [${topic}] ${message.toString()}`)
 
-        if (topic != `dev_${this.device.getHardwareId()}`)
+        if (topic != this.inTopic)
             return
 
         // Must be:
@@ -113,23 +156,23 @@ class ConnectionHandler {
         //     "mid": <message id>,
         //     "data": <payload specific for mid>
         // }
-        parsedMessage = JSON.parse(message)
+        const parsedMessage = JSON.parse(message)
         switch (parsedMessage.mid) {
             case 'REGISTER_RESP':
-                onRegistrationResponse(parsedMessage.data)
+                this.onRegistrationResponse(parsedMessage.data)
                 break
             case 'REQ_DEVICE_ACTION':
-                onDeviceAction(parsedMessage.data)
+                this.onDeviceAction(parsedMessage.data)
                 break
             case 'REQ_SENSOR_ACTION':
-                onSensorAction(parsedMessage.data)
+                this.onSensorAction(parsedMessage.data)
                 break
         }
     }
 
     onRegistrationResponse(data) {
         if (data.status != 'OK') {
-            console.log(`Registration failure! Reason: ${data.status}`)
+            log.error(`Registration failure! Reason: ${data.status}`)
             return
         }
 
@@ -141,28 +184,30 @@ class ConnectionHandler {
     }
 
     onDeviceAction(data) {
-        actions = this.device.getActions()
-        action = actions.find((action) => { return action.getId() == data['id'] })
+        const actions = this.device.getActions()
+        const action = actions.find((action) => { return action.getId() == data['id'] })
 
         if (action) {
-            action.run()
-            // TODO: send response 
+            let [err, data] = action.run()
+            let status = err ? `FAIL: ${err}` : "OK"
+            this.sendDeviceActionResponse(action, status, data)
         }
     }
 
     onSensorAction(data) { 
-        sensors = this.device.getSensors()
-        sensor = sensors.find((sensor) => { return sensor.getId() == data['sensor_id'] })
+        const sensors = this.device.getSensors()
+        const sensor = sensors.find((sensor) => { return sensor.getId() == data['sensor_id'] })
 
         if (!sensor)
             return
             
-        actions = sensor.getActions()
-        action = actions.find((action) => { return action.getId() == data['id'] })
+        const actions = sensor.getActions()
+        const action = actions.find((action) => { return action.getId() == data['id'] })
 
         if (action) {
-            action.run()
-            // TODO: send response 
+            let [err, data] = action.run()
+            let status = err ? `FAIL: ${err}` : "OK"
+            this.sendSensorActionResponse(sensor, action, status, data)
         }
     }
 }

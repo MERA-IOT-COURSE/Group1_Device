@@ -9,7 +9,7 @@ class Sensor extends EventEmitter {
 
         // TODO: implement the actions and add support for custom actions
         this.actions = [
-            new Action("common.read", "Read value of sensor", {})
+            new Action("common.read", "Read value of sensor", () => {})
         ]
     }
     

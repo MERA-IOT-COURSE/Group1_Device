@@ -1,5 +1,5 @@
-﻿
-const API_ROOT = '<API URL>';
+
+const API_ROOT = 'api';
 const API_DEVICES = '/devices';
 const API_SENSORS = '/sensors';
 const API_ACTIONS = '/actions';
@@ -55,7 +55,6 @@ $.ajax = function(data) {
                fail: function(func) { return res; } }
     return res
 }
-
 
 /**********************************************  get_device_list  **************************************************/
 
