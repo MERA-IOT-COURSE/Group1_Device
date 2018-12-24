@@ -4,45 +4,44 @@ const Action = require('../models/action')
 
 module.exports = {
     createOrUpdate(deviceId, deviceData, callback) {
-        module.exports.findOne(deviceId, (err, prevDevice) => {
-            if (!err && prevDevice)
-                return
-
-            // add device to db
-            let sensors = []
-            for (let sensor of deviceData.sensors) {
-
-                let actions = []
-                for (let action of sensor.actions) {
-                    actions.push(new Action({
-                        id: action.id,
-                        name: action.name
-                    }))
-                }
-
-                sensors.push(new Sensor({
-                    id: sensor.id,
-                    type: sensor.type,
-                    actions: actions
-                }))
-            }
+        // add device to db
+        let sensors = []
+        for (let sensor of deviceData.sensors) {
 
             let actions = []
-            for (let action of deviceData.actions) {
+            for (let action of sensor.actions) {
                 actions.push(new Action({
                     id: action.id,
                     name: action.name
                 }))
             }
 
-            const device = new Device({
-                deviceId: deviceId,
-                name: deviceData.name,
-                actions: actions,
-                sensors: sensors
-            })
-            device.save(callback)
-        })
+            sensors.push(new Sensor({
+                id: sensor.id,
+                type: sensor.type,
+                actions: actions
+            }))
+        }
+
+        let actions = []
+        for (let action of deviceData.actions) {
+            actions.push(new Action({
+                id: action.id,
+                name: action.name
+            }))
+        }
+
+        Device.findOneAndUpdate({
+            deviceId: deviceId
+        }, {
+            deviceId: deviceId,
+            name: deviceData.name,
+            actions: actions,
+            sensors: sensors
+        }, {
+            upsert: true
+        },
+        callback)
     },
 
     findAll(callback) {
