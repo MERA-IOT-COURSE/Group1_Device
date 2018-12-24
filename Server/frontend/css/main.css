@@ -65,6 +65,7 @@ button {
 #device_list {
     margin: 0px auto;
     width: 960px;
+    min-height: 420px;
 }
 
 .ui-tabs-vertical .ui-tabs-nav {
@@ -89,6 +90,7 @@ button {
 
 .ui-tabs-vertical .ui-tabs-nav li a {
     display:block;
+    box-sizing: border-box;
     width: 100%;
 }
 
@@ -171,6 +173,15 @@ button {
 
 .canvasjs-chart-credit{
     display: none;
+}
+
+.stub {
+    position:absolute;
+    width: 70px;
+    height: 10px;
+    margin-top: 140px;
+    background: #fff;
+    z-index: 99;
 }
 
 /************************************************  Control block  *****************************************************/
