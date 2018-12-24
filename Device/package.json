@@ -1,0 +1,15 @@
+{
+    "name": "iot-client",
+    "version": "1.0.0",
+    "description": "IoT Client",
+    "main": "device-manager.js",
+    "scripts": {
+        "start": "sudo node device-manager.js"
+    },
+    "dependencies": {
+        "mqtt": "^2.18.8",
+        "nconf": "^0.10.0",
+        "winston": "^3.1.0",
+        "rpi-dht-sensor": "^0.1.1"
+    }
+}
