@@ -171,6 +171,14 @@ button {
     height: 150px;
 }
 
+.sensor-title {
+    font-size: 20px;
+}
+
+.sensor-without-chart {
+    height: 10px;
+}
+
 .canvasjs-chart-credit{
     display: none;
 }
@@ -179,7 +187,7 @@ button {
     position:absolute;
     width: 70px;
     height: 10px;
-    margin-top: 140px;
+    margin-top: 163px;
     background: #fff;
     z-index: 99;
 }
