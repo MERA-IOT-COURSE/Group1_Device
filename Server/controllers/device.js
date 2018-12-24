@@ -4,41 +4,45 @@ const Action = require('../models/action')
 
 module.exports = {
     createOrUpdate(deviceId, deviceData, callback) {
-        // add device to db
+        module.exports.findOne(deviceId, (err, prevDevice) => {
+            if (!err && prevDevice)
+                return
 
-        let sensors = []
-        for (let sensor of deviceData.sensors) {
+            // add device to db
+            let sensors = []
+            for (let sensor of deviceData.sensors) {
+
+                let actions = []
+                for (let action of sensor.actions) {
+                    actions.push(new Action({
+                        id: action.id,
+                        name: action.name
+                    }))
+                }
+
+                sensors.push(new Sensor({
+                    id: sensor.id,
+                    type: sensor.type,
+                    actions: actions
+                }))
+            }
 
             let actions = []
-            for (let action of sensor.actions) {
+            for (let action of deviceData.actions) {
                 actions.push(new Action({
                     id: action.id,
                     name: action.name
                 }))
             }
 
-            sensors.push(new Sensor({
-                id: sensor.id,
-                type: sensor.type,
-                actions: actions
-            }))
-        }
-
-        let actions = []
-        for (let action of deviceData.actions) {
-            actions.push(new Action({
-                id: action.id,
-                name: action.name
-            }))
-        }
-
-        const device = new Device({
-            deviceId: deviceId,
-            name: deviceData.name,
-            actions: actions,
-            sensors: sensors
+            const device = new Device({
+                deviceId: deviceId,
+                name: deviceData.name,
+                actions: actions,
+                sensors: sensors
+            })
+            device.save(callback)
         })
-        device.save(callback)
     },
 
     findAll(callback) {
