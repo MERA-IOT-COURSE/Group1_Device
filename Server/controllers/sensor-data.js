@@ -13,18 +13,18 @@ module.exports = {
         sensorData.save(callback)
     },
 
-    findLastValue(deviceId, sensorId, callback) {
-        SensorData.findOne({
+    findLastValues(deviceId, sensorId, count, callback) {
+        SensorData.find({
             deviceId: deviceId,
             sensorId: sensorId
         })
         .sort('-ts')
+        .limit(count)
         .exec((err, sensorData) => {
             if (!err && !sensorData) {
                 err = 'No value for `${sensorId}` sensor!'
             }
-            let value = !err ? sensorData.value : null
-            callback(err, value)
+            callback(err, sensorData)
         })
     }
 }

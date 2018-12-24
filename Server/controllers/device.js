@@ -5,7 +5,6 @@ const Action = require('../models/action')
 module.exports = {
     createOrUpdate(deviceId, deviceData, callback) {
         // add device to db
-
         let sensors = []
         for (let sensor of deviceData.sensors) {
 
@@ -32,13 +31,17 @@ module.exports = {
             }))
         }
 
-        const device = new Device({
+        Device.findOneAndUpdate({
+            deviceId: deviceId
+        }, {
             deviceId: deviceId,
             name: deviceData.name,
             actions: actions,
             sensors: sensors
-        })
-        device.save(callback)
+        }, {
+            upsert: true
+        },
+        callback)
     },
 
     findAll(callback) {

@@ -6,7 +6,7 @@ function getRandomInt(max) {
 
 class FakeSensor extends Sensor {
     constructor(updateIntervalMs) {
-        super("fake", "sensor.fake", updateIntervalMs)
+        super("sensor.fake", "Fake Sensor", updateIntervalMs)
     }
 
     readData() {

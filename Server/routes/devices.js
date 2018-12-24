@@ -88,19 +88,23 @@ router.get('/:deviceId/sensors', (req, res) => {
 router.get('/:deviceId/sensors/:sensorId', (req, res) => {
     const deviceId = req.params.deviceId
     const sensorId = req.params.sensorId
-    sensorDataController.findLastValue(deviceId, sensorId, (err, value) => {
+    const valuesCount = req.params.count || 10
+
+    sensorDataController.findLastValues(deviceId, sensorId, valuesCount, (err, sensorData) => {
         if (err) {
             log.error(err)
             return
         }
 
-        if (!value) {
+        if (!sensorData) {
             log.error(`No value for ${sensorId} of device ${deviceId}!`)
             return
         }
 
+        let values = sensorData.map((data) => { return parseInt(data.value, 10); }).reverse()
+
         res.json({
-            value: parseInt(value, 10)
+            value: values
         })
     })
 })
