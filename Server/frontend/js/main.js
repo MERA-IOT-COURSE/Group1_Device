@@ -22,7 +22,7 @@ $.ajax = function(data) {
     } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS) {
         var res_data = '[{"id": "222", "name": "Temperature", "actions": [{"id": "888", "name": "Light ON"},{"id": "889", "name": "Light OFF"}]},' +
                        '{"id": "223", "name": "Humidity"},' +
-                       '{"id": "224", "name": "Other", "actions": [{"id": "888", "name": "Light ON"},{"id": "889", "name": "Light OFF"}]}]';
+                       '{"id": "224", "name": "Other", "actions": [{"id": "888", "name": "Light ON"},{"id": "889", "name": "Light OFF"}], "without_data": true}]';
     } else if (data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS) {
         var res_data = '[]';
     } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS ||
@@ -149,7 +149,8 @@ let create_sensor_widget = function(device_id, device_body, data) {
                                                                 {"id": "889", "name": "Light OFF"}]},
                {"id": "223", "name": "Humidity"},
                {"id": "224", "name": "Prettiness", "actions": [{"id": "888", "name": "Light ON"},
-                                                                {"id": "889", "name": "Light OFF"}]}
+                                                               {"id": "889", "name": "Light OFF"}],
+                "without_data": true}
            ]
     */
     let sensors_data = parse_data(data);
@@ -167,10 +168,9 @@ let create_sensor_widget = function(device_id, device_body, data) {
         let sensor_block = $("<div>", {class: 'sensor-block'});
         let sensor_name = $("<label>", {class: 'sensor-name',
                                         text: sensor.name});
-        let sensor_chart =  $("<div>", {class: 'sensor-chart',
-                                        id: 'chart_' + device_id + '_' + sensor.id});
-        $("<div>", {class: 'stub'}).appendTo(sensor_block);
-        sensor_block.append(sensor_chart);
+        let sensor_view =  $("<div>", {id: 'chart_' + device_id + '_' + sensor.id});
+        sensor_block.append($("<label>", {class: "sensor-title", text: sensor.name}));
+        sensor_block.append(sensor_view);
         if ("actions" in sensor) {
             let sensor_action_block = $("<div>", {class: 'sensor-action-block'});
             sensor.actions.forEach(function(action, i, arr) {
@@ -203,46 +203,57 @@ let create_sensor_widget = function(device_id, device_body, data) {
         }
         sensor_widget.append(sensor_block);
 
-        // Refresh sensor value each second
-        let sensor_data = [];
-        let timer_id = new Timer(function() {
-            $.ajax({method: "GET",
-                    url: API_ROOT + API_DEVICES + '/' + device_id + API_SENSORS + '/' +
-                         sensor.id + '?count=' + SENSOR_DATA_LENGTH})
-                .done(function(data) {
-                    /*  Assume that JSON data format is:
-                        {"value": [73,10,44,54,58,58,38,94,43,32]}
-                        Value count is specified in URL by count parameter
-                    */
-                    let value_data = parse_data(data);
-                    if ('value' in value_data) {
-                        sensor_data = value_data.value;
-                    } else {
-                        show_error('Getting "' + sensor.name + '" sensor value failed');
-                    }
+        let without_data = false;
+        if ("without_data" in sensor) {
+            without_data = sensor.without_data;
+        }
 
-                    // Update chart data
-                    let chart_data = [];
-                    for (var i = 0; i < sensor_data.length; i++) {
-                        chart_data.push({x: i, y: sensor_data[i]});
-                    }
-                    // Create chart for every sensors. Without recreating it does not want to work :(
-                    let chart = new CanvasJS.Chart('chart_' + device_id + '_' + sensor.id, {
-                        title :{text: sensor.name, fontFamily: 'sans-serif', fontSize: 20},
-                        height: 150,
-                        axisY: {includeZero: false},
-                        axisX:{labelFormatter: function(e) {return "";}},
-                        data: [{type: "line", dataPoints: chart_data}]
+        if (without_data) {
+            sensor_view.addClass('sensor-without-chart');
+        } else {
+            sensor_view.addClass('sensor-chart');
+            $("<div>", {class: 'stub'}).prependTo(sensor_block);
+            // Refresh sensor value each second
+            let sensor_data = [];
+            let timer_id = new Timer(function() {
+                $.ajax({method: "GET",
+                        url: API_ROOT + API_DEVICES + '/' + device_id + API_SENSORS + '/' +
+                             sensor.id + '?count=' + SENSOR_DATA_LENGTH})
+                    .done(function(data) {
+                        /*  Assume that JSON data format is:
+                            {"value": [73,10,44,54,58,58,38,94,43,32]}
+                            Value count is specified in URL by count parameter
+                        */
+                        let value_data = parse_data(data);
+                        if ('value' in value_data) {
+                            sensor_data = value_data.value;
+                        } else {
+                            show_error('Getting "' + sensor.name + '" sensor value failed');
+                        }
+
+                        // Update chart data
+                        let chart_data = [];
+                        for (var i = 0; i < sensor_data.length; i++) {
+                            chart_data.push({x: i, y: sensor_data[i]});
+                        }
+                        // Create chart for every sensors. Without recreating it does not want to work :(
+                        let chart = new CanvasJS.Chart('chart_' + device_id + '_' + sensor.id, {
+                            height: 150,
+                            axisY: {includeZero: false},
+                            axisX:{labelFormatter: function(e) {return "";}},
+                            data: [{type: "line", dataPoints: chart_data}]
+                        });
+                        chart.render();
+                    })
+                    .fail(function(jqXHR, textStatus, error) {
+                        console.log("Device list loading failed. Error: " + error);
+                        show_error('Device list loading failed');
+                        throw error;
                     });
-                    chart.render();
-                })
-                .fail(function(jqXHR, textStatus, error) {
-                    console.log("Device list loading failed. Error: " + error);
-                    show_error('Device list loading failed');
-                    throw error;
-                });
-        }, 1000);
-        sensors.push({timer: timer_id, data: sensor_data});
+            }, 1000);
+            sensors.push({timer: timer_id, data: sensor_data});
+        }
+
     });
     // If some tab was already active, will stop sensor refreshing and crete new Device with timers
     if (active_device) {
