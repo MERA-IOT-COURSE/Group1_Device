@@ -1,5 +1,5 @@
 const Sensor = require('./sensor')
-const Utils = require('../utils')
+const Utils = require('../app/utils')
 
 class FakeSensor extends Sensor {
     constructor(readIntervalMs) {

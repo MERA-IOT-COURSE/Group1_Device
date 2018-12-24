@@ -1,5 +1,5 @@
 const Sensor = require('./sensor')
-const Utils = require('../utils')
+const Utils = require('../app/utils')
 const RpiDHTSensor = require('rpi-dht-sensor');
 
 class DHT11TemperatureSensor extends Sensor {

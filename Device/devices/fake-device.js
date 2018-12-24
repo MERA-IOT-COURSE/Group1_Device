@@ -1,5 +1,5 @@
 const Device = require('./device')
-const Action = require('../action')
+const Action = require('../app/action')
 const FakeSensor = require('../sensors/fake-sensor')
 
 var getMaxRandomInt = () => Math.floor(Number.MAX_SAFE_INTEGER * Math.random())

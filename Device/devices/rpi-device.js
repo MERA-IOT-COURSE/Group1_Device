@@ -1,7 +1,7 @@
 const fs = require('fs')
 const DHT11HumiditySensor = require('../sensors/dht11-humidity')
 const DHT11TemperatureSensor = require('../sensors/dht11-temperature')
-const Action = require('../action')
+const Action = require('../app/action')
 const Device = require('./device')
 
 function parseHardwareId() {

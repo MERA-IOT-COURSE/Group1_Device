@@ -1,4 +1,4 @@
-const Action = require('../action')
+const Action = require('../app/action')
 const EventEmitter = require('events').EventEmitter
 
 class Sensor extends EventEmitter {
