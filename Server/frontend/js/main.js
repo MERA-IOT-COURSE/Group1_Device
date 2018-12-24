@@ -16,42 +16,45 @@ var active_device = null;
 /**********************************************  Test ajax function  **************************************************/
 // TODO: Remove it, when testing is done
 //       This function replaces ajax function to test client code without web server
-// $.ajax = function(data) {
-//     if (data.url == API_ROOT + API_DEVICES) {
-//         var res_data = '[{"id": "123", "name": "Dev1"},{"id": "456", "name": "Dev2"}]';
-//     } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS) {
-//         var res_data = '[{"id": "222", "name": "Temperature", "actions": [{"id": "888", "name": "Light ON"},{"id": "889", "name": "Light OFF"}]},' +
-//                        '{"id": "223", "name": "Humidity"},' +
-//                        '{"id": "224", "name": "Other", "actions": [{"id": "888", "name": "Light ON"},{"id": "889", "name": "Light OFF"}]}]';
-//     } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '456' + API_ACTIONS) {
-//         var res_data = '[{"id": "555", "name": "Turn ON"},{"id": "556", "name": "Turn OFF"},{"id": "557", "name": "Reboot"}]';
-//     } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS + '/' + '555' ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS + '/' + '556') {
-//         var res_data = '{"res": "OK"}';
-//     } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS + '/' + '557') {
-//         var res_data = '{"res": "Fail. Reboot is not implemented"}';
-//     } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS + '/' + '222' ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS + '/' + '223' ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS + '/' + '224' ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS + '/' + '222' ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS + '/' + '223' ||
-//                data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS + '/' + '224') {
-//         let max = 100
-//         let min = 0
-//         let v = Math.floor(Math.random() * (max - min + 1)) + min
-//         var res_data = '{"value": ' + v + '}';
-//     } else {
+$.ajax = function(data) {
+    if (data.url == API_ROOT + API_DEVICES) {
+        var res_data = '[{"id": "123", "name": "Dev1"},{"id": "456", "name": "Dev2"}]';
+    } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS) {
+        var res_data = '[{"id": "222", "name": "Temperature", "actions": [{"id": "888", "name": "Light ON"},{"id": "889", "name": "Light OFF"}]},' +
+                       '{"id": "223", "name": "Humidity"},' +
+                       '{"id": "224", "name": "Other", "actions": [{"id": "888", "name": "Light ON"},{"id": "889", "name": "Light OFF"}]}]';
+    } else if (data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS) {
+        var res_data = '[]';
+    } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS ||
+               data.url == API_ROOT + API_DEVICES + '/' + '456' + API_ACTIONS) {
+        var res_data = '[{"id": "555", "name": "Turn ON"},{"id": "556", "name": "Turn OFF"},{"id": "557", "name": "Reboot"}]';
+    } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS + '/' + '555' ||
+               data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS + '/' + '556') {
+        var res_data = '{"res": "OK"}';
+    } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_ACTIONS + '/' + '557') {
+        var res_data = '{"res": "Fail. Reboot is not implemented"}';
+    } else if (data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS + '/' + '222' + '?count=10' ||
+               data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS + '/' + '223' + '?count=10' ||
+               data.url == API_ROOT + API_DEVICES + '/' + '123' + API_SENSORS + '/' + '224' + '?count=10' ||
+               data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS + '/' + '222' + '?count=10' ||
+               data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS + '/' + '223' + '?count=10' ||
+               data.url == API_ROOT + API_DEVICES + '/' + '456' + API_SENSORS + '/' + '224' + '?count=10') {
+        let max = 100
+        let min = 0
+        let values = [];
+        for (var i = 0; i < SENSOR_DATA_LENGTH; i++) {
+            values.push(Math.floor(Math.random() * (max - min + 1)) + min);
+        }
+        var res_data = '{"value": ' + JSON.stringify(values) + '}';
+    } else {
 
-//         throw "No TEST function for URL: " + data.url;
-//     }
+        throw "No TEST function for URL: " + data.url;
+    }
 
-//     let res = {done: function(func) { func(res_data); return res; },
-//                fail: function(func) { return res; } }
-//     return res
-// }
-
+    let res = {done: function(func) { func(res_data); return res; },
+               fail: function(func) { return res; } }
+    return res
+}
 
 /**********************************************  get_device_list  **************************************************/
 
@@ -166,6 +169,7 @@ let create_sensor_widget = function(device_id, device_body, data) {
                                         text: sensor.name});
         let sensor_chart =  $("<div>", {class: 'sensor-chart',
                                         id: 'chart_' + device_id + '_' + sensor.id});
+        $("<div>", {class: 'stub'}).appendTo(sensor_block);
         sensor_block.append(sensor_chart);
         if ("actions" in sensor) {
             let sensor_action_block = $("<div>", {class: 'sensor-action-block'});
@@ -203,17 +207,16 @@ let create_sensor_widget = function(device_id, device_body, data) {
         let sensor_data = [];
         let timer_id = new Timer(function() {
             $.ajax({method: "GET",
-                    url: API_ROOT + API_DEVICES + '/' + device_id + API_SENSORS + '/' + sensor.id})
+                    url: API_ROOT + API_DEVICES + '/' + device_id + API_SENSORS + '/' +
+                         sensor.id + '?count=' + SENSOR_DATA_LENGTH})
                 .done(function(data) {
                     /*  Assume that JSON data format is:
-                        {"value": 35}
+                        {"value": [73,10,44,54,58,58,38,94,43,32]}
+                        Value count is specified in URL by count parameter
                     */
                     let value_data = parse_data(data);
                     if ('value' in value_data) {
-                        sensor_data.push(value_data.value);
-                        if (sensor_data.length > SENSOR_DATA_LENGTH) {
-                            sensor_data.shift();
-                        }
+                        sensor_data = value_data.value;
                     } else {
                         show_error('Getting "' + sensor.name + '" sensor value failed');
                     }
