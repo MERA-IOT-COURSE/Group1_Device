@@ -1,7 +1,8 @@
 const fs = require('fs')
+const cp = require("child_process")
 const DHT11HumiditySensor = require('../sensors/dht11-humidity')
 const DHT11TemperatureSensor = require('../sensors/dht11-temperature')
-const Action = require('../action')
+const Action = require('../app/action')
 const Device = require('./device')
 
 function parseHardwareId() {
@@ -18,13 +19,17 @@ function parseHardwareId() {
 var device = new Device("group1", parseHardwareId())
 
 // Sensors:
-// TODO: scan RPi to get a real list of sensors 
-device.addSensor(new DHT11HumiditySensor())
-device.addSensor(new DHT11TemperatureSensor())
-        
-// Default actions:
-// TODO: implement actions
-device.addAction(new Action("custom.reboot", "Reboot", () => {}))
-device.addAction(new Action("custom.shutdown", "Shutdown", () => {}))
+// TODO: get a list of sensors with parameters from config
+const DHT11GpioPin = 4
+device.addSensor(new DHT11HumiditySensor(DHT11GpioPin))
+device.addSensor(new DHT11TemperatureSensor(DHT11GpioPin))
+
+// Actions:
+device.addAction(new Action("custom.reboot", "Reboot", () => {
+    cp.exec("reboot")
+}))
+device.addAction(new Action("custom.shutdown", "Shutdown", () => {
+    cp.exec("halt")
+}))
 
 module.exports = device

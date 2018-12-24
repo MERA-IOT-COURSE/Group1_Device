@@ -1,16 +1,43 @@
-const Action = require('../action')
+const Action = require('../app/action')
+const Utils = require('../app/utils')
 const EventEmitter = require('events').EventEmitter
 
 class Sensor extends EventEmitter {
-    constructor(id, type) {
+    constructor(id, type, updateIntervalMs) {
+        // Derived classes must implement readData() function
+
         super()
         this.id = id
         this.type = type
 
-        // TODO: implement the actions and add support for custom actions
+        this.updateTimer = null
+        this.updateIntervalMs = updateIntervalMs || 1000
+
         this.actions = [
-            new Action("common.read", "Read value of sensor", () => {})
+            new Action("common.read", "Read value", () => {
+                this.sendData()
+            }),
+            new Action("common.update_on", "Update ON", () => {
+                if (this.updateTimer !== null)
+                    return
+
+                this.updateTimer = setInterval(() => { this.sendData() }, this.updateIntervalMs)
+            }),
+            new Action("common.update_off", "Update OFF", () => {
+                if (this.updateTimer === null)
+                    return
+
+                clearInterval(this.updateTimer)
+                this.updateTimer = null
+            })
         ]
+
+        this.runAction("common.update_on")
+    }
+
+    sendData() {
+        var data = this.readData()
+        this.emit("data", this, data, Utils.getTimestamp())
     }
     
     getId() {
@@ -23,6 +50,15 @@ class Sensor extends EventEmitter {
 
     getActions() {
         return this.actions
+    }
+
+    addAction(action) {
+        this.actions.push(action)
+    }
+
+    runAction(actionId) {
+        const action = this.actions.find((action) => { return action.getId() == actionId })
+        return action ? action.run() : null
     }
 }
 

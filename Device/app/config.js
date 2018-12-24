@@ -1,4 +1,4 @@
-const config = require('../Common/config/config')
+const config = require('../../Common/config/config')
 
 config.defaults({
     'ip': 'localhost',

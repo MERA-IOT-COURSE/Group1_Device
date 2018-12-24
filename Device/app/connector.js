@@ -1,4 +1,4 @@
-const log = require('../Common/logger/log')(module)
+const log = require('../../Common/logger/log')(module)
 const mqtt = require('mqtt')
 const version = "1.0"
 
