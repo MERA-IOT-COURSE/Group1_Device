@@ -10,7 +10,8 @@ const actionSchema = require('./action').schema
 const sensorSchema = mongoose.Schema({
     id: String,
     type: String,
-    actions: [actionSchema]
+    actions: [actionSchema],
+    showChart: Boolean
 })
 
 module.exports = mongoose.model('Sensor', sensorSchema)

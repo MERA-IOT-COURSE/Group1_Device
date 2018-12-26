@@ -2,6 +2,10 @@ const Device = require('../models/device')
 const Sensor = require('../models/sensor')
 const Action = require('../models/action')
 
+function needShowChart(sensorType) {
+    return !sensorType.startsWith('led.')
+}
+
 module.exports = {
     createOrUpdate(deviceId, deviceData, callback) {
         // add device to db
@@ -19,7 +23,8 @@ module.exports = {
             sensors.push(new Sensor({
                 id: sensor.id,
                 type: sensor.type,
-                actions: actions
+                actions: actions,
+                showChart: needShowChart(sensor.type)
             }))
         }
 
