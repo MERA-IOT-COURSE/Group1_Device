@@ -6,6 +6,7 @@ class DHT11HumiditySensor extends Sensor {
         super("sensor.humidity", "Humidity")
 
         this.dht = new RpiDHTSensor.DHT11(gpioPin);
+        this.runAction("common.update_on")
     }
 
     readData() {

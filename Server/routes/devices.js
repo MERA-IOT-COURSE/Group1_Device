@@ -75,17 +75,12 @@ router.get('/:deviceId/sensors', (req, res) => {
             })
         }
 
-        let sensorJson = {
+        result.push({
             id: sensor.id,
             name: sensor.type,
-            actions: actions
-        }
-
-        if ('showChart' in sensor) {
-            sensorJson.showChart = sensor.showChart
-        }
-
-        result.push(sensorJson)
+            actions: actions,
+            without_data: sensor.withoutData
+        })
     }
 
     res.json(result)

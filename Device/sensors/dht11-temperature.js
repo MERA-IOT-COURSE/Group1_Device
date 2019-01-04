@@ -6,6 +6,7 @@ class DHT11TemperatureSensor extends Sensor {
         super("sensor.temperature", "Temperature")
 
         this.dht = new RpiDHTSensor.DHT11(gpioPin);
+        this.runAction("common.update_on")
     }
 
     readData() {

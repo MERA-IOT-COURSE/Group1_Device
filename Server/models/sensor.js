@@ -11,7 +11,7 @@ const sensorSchema = mongoose.Schema({
     id: String,
     type: String,
     actions: [actionSchema],
-    showChart: Boolean
+    withoutData: Boolean
 })
 
 module.exports = mongoose.model('Sensor', sensorSchema)
