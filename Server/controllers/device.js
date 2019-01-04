@@ -2,6 +2,10 @@ const Device = require('../models/device')
 const Sensor = require('../models/sensor')
 const Action = require('../models/action')
 
+function isWithoutData(sensorType) {
+    return sensorType.startsWith('led.')
+}
+
 module.exports = {
     createOrUpdate(deviceId, deviceData, callback) {
         // add device to db
@@ -9,26 +13,32 @@ module.exports = {
         for (let sensor of deviceData.sensors) {
 
             let actions = []
-            for (let action of sensor.actions) {
-                actions.push(new Action({
-                    id: action.id,
-                    name: action.name
-                }))
+
+            if ('actions' in sensor) {
+                for (let action of sensor.actions) {
+                    actions.push(new Action({
+                        id: action.id,
+                        name: action.name
+                    }))
+                }
             }
 
             sensors.push(new Sensor({
                 id: sensor.id,
                 type: sensor.type,
-                actions: actions
+                actions: actions,
+                withoutData: isWithoutData(sensor.id)
             }))
         }
 
         let actions = []
-        for (let action of deviceData.actions) {
-            actions.push(new Action({
-                id: action.id,
-                name: action.name
-            }))
+        if ('actions' in deviceData) {
+            for (let action of deviceData.actions) {
+                actions.push(new Action({
+                    id: action.id,
+                    name: action.name
+                }))
+            }
         }
 
         Device.findOneAndUpdate({

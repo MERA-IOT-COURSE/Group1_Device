@@ -31,8 +31,6 @@ class Sensor extends EventEmitter {
                 this.updateTimer = null
             })
         ]
-
-        this.runAction("common.update_on")
     }
 
     sendData() {

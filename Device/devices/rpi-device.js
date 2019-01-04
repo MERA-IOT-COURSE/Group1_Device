@@ -2,6 +2,7 @@ const fs = require('fs')
 const cp = require("child_process")
 const DHT11HumiditySensor = require('../sensors/dht11-humidity')
 const DHT11TemperatureSensor = require('../sensors/dht11-temperature')
+const LedSensor = require('../sensors/led-sensor')
 const Action = require('../app/action')
 const Device = require('./device')
 
@@ -23,6 +24,7 @@ var device = new Device("group1", parseHardwareId())
 const DHT11GpioPin = 4
 device.addSensor(new DHT11HumiditySensor(DHT11GpioPin))
 device.addSensor(new DHT11TemperatureSensor(DHT11GpioPin))
+device.addSensor(new LedSensor(17, 27, 22))
 
 // Actions:
 device.addAction(new Action("custom.reboot", "Reboot", () => {

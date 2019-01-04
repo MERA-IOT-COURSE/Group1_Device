@@ -78,7 +78,8 @@ router.get('/:deviceId/sensors', (req, res) => {
         result.push({
             id: sensor.id,
             name: sensor.type,
-            actions: actions
+            actions: actions,
+            without_data: sensor.withoutData
         })
     }
 
